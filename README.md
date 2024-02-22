@@ -28,4 +28,4 @@ UI Design        ███████████████░░░░░░
 - Wechat: cheng-oneo
 - QQ: 1217950746
 - Email: oneo.me@outlook.com
-- Blog: *Developing...*
+- Blog: developing...
