@@ -5,6 +5,7 @@
 - Apple Platform Developer
 - Windows Platform Developer
 - Designer
+- Love sports: Rider and Runner
 
 #### My Projects
 
@@ -29,3 +30,4 @@ UI Design        ███████████████░░░░░░
 - QQ: 1217950746
 - Email: oneo.me@outlook.com
 - Blog: developing...
+- Twitter(X): [oneo_me](https://twitter.com/oneo_me)
