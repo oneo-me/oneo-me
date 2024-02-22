@@ -1,2 +1,31 @@
-[![](https://github-profile-trophy.vercel.app/?username=oneo-me&row=1)
-](https://github.com/oneo-me)
+![](https://github-profile-trophy.vercel.app/?username=oneo-me&row=1)
+
+#### About Me
+
+- Apple Platform Developer
+- Windows Platform Developer
+- Designer
+
+#### My Projects
+
+...
+
+#### My Skill
+
+```text
+C#               █████████████████████░░░░
+WPF              ███████████████████████░░
+Avalonia         ███████████████████████░░
+Golang           ███████████░░░░░░░░░░░░░░
+NodeJS           ███████████████░░░░░░░░░░
+Swift            ███████░░░░░░░░░░░░░░░░░░ learning...
+SwiftUI          █████████░░░░░░░░░░░░░░░░ learning...
+UI Design        ███████████████░░░░░░░░░░
+```
+
+#### Contact ME
+
+- Wechat: cheng-oneo
+- QQ: 1217950746
+- Email: oneo.me@outlook.com
+- Blog: *Developing...*
