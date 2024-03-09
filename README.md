@@ -5,10 +5,6 @@
 - Designer
 - Love sports: Rider and Runner
 
-#### My Projects
-
-...
-
 #### My Skill
 
 ```text
