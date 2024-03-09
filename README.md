@@ -1,3 +1,5 @@
+![](https://github-profile-trophy.vercel.app/?username=oneo-me&row=1)
+
 #### About Me
 
 - Apple Platform Developer
@@ -25,5 +27,3 @@ UI Design        ███████████████░░░░░░
 - Email: oneo.me@outlook.com
 - Blog: developing...
 - Twitter(X): [oneo_me](https://twitter.com/oneo_me)
-
-![](https://github-profile-trophy.vercel.app/?username=oneo-me&row=1)
