@@ -1,7 +1,5 @@
 [![](https://github-profile-trophy.vercel.app/?username=oneo-me&row=1)](#)
 
-[![](https://github-readme-activity-graph.vercel.app/graph?username=oneo-me&bg_color=ffffff&color=196ccb&line=196ccb&point=196ccb)](#)
-
 #### About Me
 
 - Apple Platform Developer
