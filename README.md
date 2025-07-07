@@ -27,5 +27,5 @@ UI Design        ███████████████░░░░░░
 #### Contact ME
 
 - Email: oneo.me@outlook.com
-- Blog: developing...
+- Blog: [oneo.me](https://oneo.me/)
 - Twitter(X): [oneo666](https://twitter.com/oneo666)
