@@ -7,25 +7,7 @@
 - Designer
 - Love sports: Rider and Runner
 
-#### My Projects
-
-...
-
-#### My Skill
-
-```text
-C#               █████████████████████░░░░
-WPF              ███████████████████████░░
-Avalonia         ███████████████████████░░
-Golang           ███████████░░░░░░░░░░░░░░
-NodeJS           ███████████████░░░░░░░░░░
-Swift            ███████░░░░░░░░░░░░░░░░░░ learning...
-SwiftUI          █████████░░░░░░░░░░░░░░░░ learning...
-UI Design        ███████████████░░░░░░░░░░
-```
-
 #### Contact ME
 
 - Email: oneo.me@outlook.com
 - Blog: [oneo.me](https://oneo.me/)
-- Twitter(X): [oneo666](https://twitter.com/oneo666)
