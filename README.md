@@ -1,39 +1,23 @@
-<div align="center">
+<a href="https://oneo.me/"><img src="assets/hero.svg" width="100%" alt="ONEO — native tools for the agent era. Shanghai. Go, TypeScript, Rust."></a>
 
-# Hi, I'm ONEO 👋
+I build native apps and the frameworks underneath them, mostly in Go: fast native UI, plain local files, and tools for working with coding agents.
 
-**Building native tools for the agent era — cross-platform apps, Go and the web.**
+[Blog](https://oneo.me/) · [X](https://x.com/oneo666) · [Email](mailto:x@oneo.me) · [Sponsor](https://github.com/sponsors/oneo-me)
 
-📍 Shanghai
+## Selected work
 
-[![Blog](https://img.shields.io/badge/Blog-oneo.me-0f766e?style=for-the-badge&logo=rss&logoColor=white)](https://oneo.me/)
-[![Email](https://img.shields.io/badge/Email-x%40oneo.me-0f766e?style=for-the-badge&logo=minutemailer&logoColor=white)](mailto:x@oneo.me)
+<a href="https://github.com/oneo-me/onevra"><img src="assets/onevra.png" width="49%" alt="Onevra: native desktop UI components for Go, with a packager for macOS, Windows and Linux"></a> <a href="https://github.com/oneo-me/nsgo"><img src="assets/nsgo.png" width="49%" alt="NSGo: a native UI engine with a Go backend that draws with each platform's own views"></a>
 
-</div>
+<a href="https://github.com/oneo-me/onegit"><img src="assets/onegit.png" width="49%" alt="Onegit: a worktree-centered app for browsing many Git repositories in one window"></a> <a href="https://github.com/oneo-me/neohm"><img src="assets/neohm.png" width="49%" alt="NeoHM: a menu bar app for controlling Home Assistant devices"></a>
 
-### 🤖 What I Build
+**Also**
 
-- **Workspaces for coding agents** — a native desktop app that runs several coding agents side by side, each task in its own Git worktree, on this machine or any SSH host.
-- **Local-first knowledge** — Markdown notebooks like [Locus](https://github.com/oneo-me/locus) that keep notes as plain files and expose them to agents through MCP.
-- **Local AI** — self-hosted LLM inference on my own GPU, and system-wide voice input with streaming speech recognition.
-- **Cross-platform UI frameworks** — [Onevra](https://github.com/oneo-me/onevra), native desktop components for Go with one packager for macOS, Windows and Linux; plus a component library in Rust.
-- **Web & systems** — browser terminals with persistent sessions, remote app windows streamed over SSH, and a worktree-first Git client.
+- [Locus](https://github.com/oneo-me/locus): a local-first Markdown notebook. Notes stay ordinary files, and agents read them through MCP.
+- [Manta](https://github.com/oneo-me/manta): a UI toolkit and MVVM framework for Avalonia on .NET.
+- [Smile Icons](https://github.com/oneo-me/Smile-Theme): file and folder icons for VS Code and Zed.
 
-### 📊 GitHub Stats
+**In the workshop**
 
-<p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=oneo-me&show_icons=true&include_all_commits=true&theme=transparent&hide_border=true&title_color=0f766e&icon_color=0f766e" alt="GitHub stats" />
-  <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=oneo-me&layout=compact&langs_count=8&theme=transparent&hide_border=true&title_color=0f766e" alt="Top languages" />
-</p>
-
-### 🛠️ Tech Stack
-
-<p>
-  <img src="https://skillicons.dev/icons?i=go,ts,rust,html,css,apple,windows,linux&perline=8" alt="Tech stack" />
-</p>
-
-<sub>Previously: C# and Swift.</sub>
-
-<div align="center">
-  <sub>Thanks for stopping by ✨</sub>
-</div>
+- A native workspace that runs several coding agents side by side, each task in its own Git worktree, on this machine or any SSH host.
+- System-wide voice input with streaming speech recognition, and LLM inference on my own GPU.
+- Browser terminals with persistent sessions, and remote app windows streamed over SSH.
