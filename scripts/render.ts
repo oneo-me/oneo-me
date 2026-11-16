@@ -190,7 +190,7 @@ function hero() {
     { s: "I make native apps, and the frameworks" },
     { s: "underneath them." },
     { s: "ls ~/projects", command: true },
-    { s: "nsgo hando agio scenra onevra onegit" },
+    { s: "nsgo hando umapp agio scenra onevra onegit" },
     { s: "neohm manta smile-icons locus" },
   ];
   const size14 = 14;
