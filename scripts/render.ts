@@ -121,8 +121,9 @@ function svg(w: number, h: number, title: string, body: string) {
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>\n${body}\n</svg>\n`;
 }
 
-/** Cyan and pink copies of a path that flash in offset slices now and then, like the site's wordmark. */
-function glitch(id: string, d: string, top: number, height: number, period = 3.2) {
+/** Cyan and pink copies of each letter that flash in offset slices now and then, like the site's wordmark.
+ * A letter's `dim` animates its opacity, so a dark letter's slices go dark with it. */
+function glitch(id: string, letters: { d: string; dim?: string }[], top: number, height: number, period = 3.2) {
   const slice = (offset: number, cuts: [number, number][]) => {
     const ys = cuts.map(([from]) => (top + from * height).toFixed(1));
     const hs = cuts.map(([from, to]) => ((to - from) * height).toFixed(1));
@@ -136,8 +137,264 @@ function glitch(id: string, d: string, top: number, height: number, period = 3.2
 <animate attributeName="y" values="${s.ys}" keyTimes="${times}" calcMode="discrete" dur="${dur}s" repeatCount="indefinite"/>
 <animate attributeName="height" values="${s.hs}" keyTimes="${times}" calcMode="discrete" dur="${dur}s" repeatCount="indefinite"/>
 </rect></clipPath>
-<g clip-path="url(#${id}-${name})"><path d="${d}" fill="${color}" transform="translate(${dx} 0)"/></g>`;
+<g clip-path="url(#${id}-${name})" transform="translate(${dx} 0)">${letters
+    .map(({ d, dim }) => (dim ? `<path d="${d}" fill="${color}">${dim}</path>` : `<path d="${d}" fill="${color}"/>`))
+    .join("")}</g>`;
   return layer("a", C.cyan, "-8", a, period) + layer("b", C.pink, "8", b, period * 0.84);
+}
+
+// ---------- flickering lamps ----------
+
+/** A seeded random source, so every render writes the same SVG. */
+function random(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+type Lamp = "head" | "tail";
+type LampKey = { t: number; level: number; glow: number };
+type Bolt = { lamp: Lamp; from: number; span: number; start: number; end: number; tint: string };
+
+const BOLT_TINTS = [C.acid, C.acid, C.acid, C.cyan, C.text];
+
+/**
+ * Plays the site's MorphTitle once, ahead of time: the outer O's of the wordmark flicker like failing
+ * lamps, die, catch again and brown out, so the word reads ONEO, ONE or NEO, and one O always stays
+ * lit. It records every change of light and every arc, in milliseconds, until at least `length` has
+ * passed and both lamps are lit again, so the recording loops seamlessly from the whole word.
+ */
+function flickerScript(seed: number, length: number) {
+  const rnd = random(seed);
+  const between = (low: number, high: number) => low + rnd() * (high - low);
+  const keys: Record<Lamp, LampKey[]> = { head: [{ t: 0, level: 1, glow: 0 }], tail: [{ t: 0, level: 1, glow: 0 }] };
+  const bolts: Bolt[] = [];
+  const on = { head: true, tail: true };
+  const levels = { head: 1, tail: 1 };
+  const other = (lamp: Lamp): Lamp => (lamp === "head" ? "tail" : "head");
+  let t = between(1400, 2600);
+
+  // Whatever the flickers ask for, one O always stays readable.
+  const light = (lamp: Lamp, level: number, glow = 0) => {
+    if (levels[other(lamp)] < 0.6) level = Math.max(level, 0.6);
+    levels[lamp] = level;
+    keys[lamp].push({ t, level, glow });
+  };
+
+  const spark = (lamp: Lamp, time: number, count = 1 + Math.floor(rnd() * 3)) => {
+    for (let i = 0; i < count; i++)
+      bolts.push({
+        lamp,
+        from: rnd() * Math.PI * 2,
+        span: between(0.5, 2.6),
+        start: t,
+        end: t + time * between(0.5, 1),
+        tint: BOLT_TINTS[Math.floor(rnd() * BOLT_TINTS.length)]!,
+      });
+  };
+
+  // A run of flickers that settles on or off. A lamp that must stay lit only dims, never dies.
+  const flicker = (lamp: Lamp, end: boolean) => {
+    const floor = on[other(lamp)] ? 0 : 0.45;
+    let left = 2 + Math.floor(rnd() * 9);
+    while (left-- > 0) {
+      const bright = left % 2 === 0 || rnd() < 0.2;
+      const glow = bright && rnd() < 0.65 ? 1 : 0;
+      light(lamp, bright ? between(0.55, 1) : between(floor, floor + 0.3), glow);
+      const time = rnd() < 0.15 ? between(150, 420) : between(22, 120);
+      if (glow) spark(lamp, time + 40);
+      t += time;
+    }
+    on[lamp] = end;
+    light(lamp, end ? 1 : 0);
+    // A lamp that dies goes out with a last crackle.
+    if (!end && rnd() < 0.7) spark(lamp, between(80, 200), 2 + Math.floor(rnd() * 3));
+  };
+
+  // A lamp that hums dimly for a moment and recovers.
+  const brownout = (lamp: Lamp) => {
+    const floor = on[other(lamp)] ? 0.2 : 0.5;
+    const end = t + between(300, 1100);
+    while (t <= end) {
+      light(lamp, between(floor, 0.75));
+      if (rnd() < 0.12) spark(lamp, 60, 1);
+      t += between(30, 90);
+    }
+    light(lamp, 1);
+  };
+
+  const rest = (low: number, high: number) => (t += between(low, high));
+
+  while (t < length || !on.head || !on.tail) {
+    const dark: Lamp | undefined = !on.head ? "head" : !on.tail ? "tail" : undefined;
+    const roll = rnd();
+    if (!dark) {
+      const lamp: Lamp = rnd() < 0.5 ? "head" : "tail";
+      if (roll < 0.6) {
+        flicker(lamp, false);
+        rest(700, 4200);
+      } else if (roll < 0.85) {
+        flicker(lamp, true);
+        rest(300, 2000);
+      } else {
+        brownout(lamp);
+        rest(400, 2200);
+      }
+      continue;
+    }
+    const lit = other(dark);
+    if (roll < 0.45) {
+      // The dark lamp catches and the lit one fails soon after: ONE turns into NEO.
+      flicker(dark, true);
+      rest(0, 500);
+      flicker(lit, false);
+      rest(700, 4200);
+    } else if (roll < 0.7) {
+      flicker(dark, true);
+      rest(500, 2600);
+    } else if (roll < 0.85) {
+      flicker(dark, false);
+      rest(400, 2000);
+    } else if (roll < 0.93) {
+      flicker(lit, true);
+      rest(400, 2000);
+    } else {
+      brownout(lit);
+      rest(400, 2000);
+    }
+  }
+  return { keys, bolts, duration: t };
+}
+
+/** A discrete SMIL track over the whole loop, from points in milliseconds. Same-time points keep the last. */
+function track(attribute: string, points: { t: number; value: string }[], duration: number) {
+  const merged: { key: string; value: string }[] = [];
+  for (const { t, value } of points) {
+    const key = (Math.round((t / duration) * 1e5) / 1e5).toString();
+    const last = merged[merged.length - 1];
+    if (last && last.key === key) last.value = value;
+    else if (last?.value !== value) merged.push({ key, value });
+  }
+  return `<animate attributeName="${attribute}" values="${merged.map((p) => p.value).join(";")}" keyTimes="${merged.map((p) => p.key).join(";")}" dur="${(duration / 1000).toFixed(3)}s" calcMode="discrete" repeatCount="indefinite"/>`;
+}
+
+/** The middle line of an O's stroke: the center, radii and stroke thickness of the glyph's two contours. */
+function filament(path: opentype.Path) {
+  const boxes: { x1: number; y1: number; x2: number; y2: number }[] = [];
+  for (const c of path.commands) {
+    if (c.type === "M") boxes.push({ x1: c.x, y1: c.y, x2: c.x, y2: c.y });
+    else if (c.type !== "Z") {
+      const box = boxes[boxes.length - 1]!;
+      box.x1 = Math.min(box.x1, c.x);
+      box.y1 = Math.min(box.y1, c.y);
+      box.x2 = Math.max(box.x2, c.x);
+      box.y2 = Math.max(box.y2, c.y);
+    }
+  }
+  boxes.sort((a, b) => b.x2 - b.x1 - (a.x2 - a.x1));
+  const [outer, inner] = boxes as [(typeof boxes)[0], (typeof boxes)[0]];
+  const thick = inner.x1 - outer.x1;
+  return {
+    x: (outer.x1 + outer.x2) / 2,
+    y: (outer.y1 + outer.y2) / 2,
+    rx: (outer.x2 - outer.x1 - thick) / 2,
+    ry: (outer.y2 - outer.y1 - thick) / 2,
+    thick,
+  };
+}
+
+let arcCount = 0;
+
+/**
+ * Jagged arcs along an O's filament, one path per tint whose shape is swapped every few frames while
+ * any of its arcs burn, so they crackle the way the site redraws them every frame.
+ */
+function arcs(bolts: Bolt[], o: ReturnType<typeof filament>, duration: number, rnd: () => number) {
+  const FRAME = 60;
+  const n = (v: number) => String(Math.round(v));
+  // A rounded-square curve, close to the shape of the O.
+  const at = (angle: number, offset: number) => {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return [
+      o.x + (o.rx + offset) * Math.sign(cos) * Math.abs(cos) ** 0.7,
+      o.y + (o.ry + offset) * Math.sign(sin) * Math.abs(sin) ** 0.7,
+    ] as const;
+  };
+  const line = (points: (readonly [number, number])[]) => points.map(([x, y], i) => `${i ? "L" : "M"}${n(x)} ${n(y)}`).join("");
+  const shape = (bolt: Bolt) => {
+    const count = Math.max(6, Math.round(bolt.span * 9));
+    const path = Array.from({ length: count + 1 }, (_, i) =>
+      at(bolt.from + (bolt.span * i) / count, i === 0 || i === count ? 0 : (rnd() - 0.5) * o.thick * 0.6),
+    );
+    let d = line(path);
+    const branches = rnd() < 0.6 ? 1 + Math.floor(rnd() * 2) : 0;
+    for (let b = 0; b < branches; b++) {
+      const start = Math.floor(rnd() * count);
+      const angle = bolt.from + (bolt.span * start) / count;
+      const out = rnd() < 0.5 ? 1 : -1;
+      d += line([path[start]!, ...[1, 2, 3].map((step) => at(angle + (rnd() - 0.5) * 0.25, out * step * o.thick * 0.35))]);
+    }
+    return d;
+  };
+
+  let body = "";
+  for (const tint of new Set(BOLT_TINTS)) {
+    const mine = bolts.filter((bolt) => bolt.tint === tint);
+    if (!mine.length) continue;
+    const edges = [...new Set([0, duration, ...mine.flatMap((bolt) => [bolt.start, bolt.end])])].sort((a, b) => a - b);
+    const points: { t: number; value: string }[] = [];
+    for (let i = 0; i < edges.length - 1; i++) {
+      const [from, to] = [edges[i]!, edges[i + 1]!];
+      const live = mine.filter((bolt) => bolt.start <= from && bolt.end >= to);
+      if (!live.length) {
+        points.push({ t: from, value: "M0 0" });
+        continue;
+      }
+      for (let t = from; t < to; t += FRAME) points.push({ t, value: live.map(shape).join("") });
+    }
+    // One animated shape, drawn twice: a glowing colored stroke and a thin white core.
+    const ref = `arc-${(arcCount++).toString(36)}`;
+    body += `<defs><path id="${ref}" d="M0 0">${track("d", points, duration)}</path></defs>`;
+    body += `<use href="#${ref}" fill="none" stroke="${tint}" stroke-width="${Math.max(0.8, o.thick / 28).toFixed(2)}" filter="url(#arc-glow)"/>`;
+    body += `<use href="#${ref}" fill="none" stroke="#ffffff" stroke-width="${Math.max(0.5, o.thick / 70).toFixed(2)}"/>`;
+  }
+  return body;
+}
+
+/** The wordmark: N and E steady, the outer O's flickering with arcs, every letter with glitch slices. */
+function wordmark(id: string, word: string, x: number, baseline: number, size: number) {
+  const glyphs = display.getPaths(word, x, baseline, size);
+  const { keys, bolts, duration } = flickerScript(7, 48000);
+  const lamps: Partial<Record<number, Lamp>> = { 0: "head", [glyphs.length - 1]: "tail" };
+  const rnd = random(11);
+  let sparks = "";
+  const thick = filament(glyphs[0]!).thick;
+
+  let body = `<defs>
+<filter id="${id}-spark" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceAlpha" stdDeviation="${(size * 0.025).toFixed(1)}" result="near"/><feFlood flood-color="${C.acid}" flood-opacity="0.8"/><feComposite in2="near" operator="in" result="a"/><feGaussianBlur in="SourceAlpha" stdDeviation="${(size * 0.125).toFixed(1)}" result="far"/><feFlood flood-color="${C.acid}" flood-opacity="0.4"/><feComposite in2="far" operator="in" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="a"/></feMerge></filter>
+<filter id="arc-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${(thick * 0.17).toFixed(1)}" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>`;
+  const letters = glyphs.map((glyph, i) => {
+    const d = pathData(glyph);
+    const lamp = lamps[i];
+    if (!lamp) {
+      body += `<path d="${d}" fill="${C.text}"/>`;
+      return { d };
+    }
+    const level = (k: LampKey) => ({ t: k.t, value: String(Math.round(k.level * 100) / 100) });
+    // The letter's green glow while it sparks, then the letter itself, lit by its level and
+    // turning into a hollow gray outline as it dies.
+    body += `<path d="${d}" fill="${C.acid}" filter="url(#${id}-spark)" opacity="0">${track("opacity", keys[lamp].map((k) => ({ t: k.t, value: String(k.glow) })), duration)}</path>`;
+    body += `<path d="${d}" fill="${C.text}" stroke="${C.mute}" stroke-width="${(size * 0.012).toFixed(1)}" stroke-opacity="0">${track("fill-opacity", keys[lamp].map(level), duration)}${track("stroke-opacity", keys[lamp].map((k) => ({ t: k.t, value: String(Math.round(0.45 * (1 - k.level) * 100) / 100) })), duration)}</path>`;
+    sparks += arcs(bolts.filter((bolt) => bolt.lamp === lamp), filament(glyph), duration, rnd);
+    return { d, dim: track("opacity", keys[lamp].map(level), duration) };
+  });
+  body += glitch(id, letters, baseline - size * 0.72, size * 0.74);
+  return body + sparks;
 }
 
 // ---------- tiles ----------
@@ -163,9 +420,7 @@ function hero() {
   // Wordmark.
   const size = 232;
   const baseline = 352;
-  const mark = pathData(display.getPath("ONEO", 40, baseline, size));
-  body += `<path d="${mark}" fill="${C.text}"/>`;
-  body += glitch(id, mark, baseline - size * 0.72, size * 0.74);
+  body += wordmark(id, "ONEO", 40, baseline, size);
 
   // Greeting and intro.
   body += text(displayMedium, "Hi, I’m ONEO.", 48, 430, 32, C.text);
